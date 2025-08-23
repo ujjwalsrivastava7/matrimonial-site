@@ -1,4 +1,359 @@
+// ================== CONFIG ==================
+
+// Auto-detect API base depending on environment
+const API_BASE = window.location.hostname === "localhost" 
+    ? "http://localhost:5000/api" 
+    : "https://matrimonial-site-7gx6.onrender.com/api";
+
+
+
+// 👆 Replace with your actual Render backend URL
+
 // ================== AUTH MANAGER ==================
+const AuthManager = {
+    setAuth(token, userData) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('userId', userData._id);
+    },
+    getAuth() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const userId = localStorage.getItem('userId');
+        return { token, user, userId };
+    },
+    clearAuth() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+    },
+    isAuthenticated() {
+        const { token, userId } = this.getAuth();
+        return !!token && !!userId;
+    },
+    handleApiError(error) {
+        console.error('API Error:', error);
+        if (error.message.includes('token') || error.message.includes('401')) {
+            this.clearAuth();
+            window.location.href = 'login.html';
+        }
+        throw error;
+    }
+};
+
+// ================== PROFILE MANAGER ==================
+const ProfileManager = {
+    async loadProfileData() {
+        try {
+            const { token, user } = AuthManager.getAuth();
+            if (!token || !user?._id) throw new Error('Please login to view profile');
+            this.showLoadingState(true);
+
+            const response = await fetch(`${API_BASE}/user/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch profile');
+            const profileData = await response.json();
+            this.displayProfile(profileData);
+            return profileData;
+
+        } catch (error) {
+            console.error('Profile load error:', error);
+            this.showErrorState(error.message);
+            AuthManager.handleApiError(error);
+        } finally {
+            this.showLoadingState(false);
+        }
+    },
+
+    displayProfile(profileData) {
+        const profilePic = document.getElementById('profile-pic');
+        if (profileData.profilePhoto) {
+            profilePic.src = profileData.profilePhoto.startsWith('http')
+                ? profileData.profilePhoto
+                : `${API_BASE.replace('/api', '')}${profileData.profilePhoto}`;
+            profilePic.onerror = () => { profilePic.src = 'default.png'; };
+        }
+
+        const profileForm = document.getElementById('profile-form');
+        if (profileForm) {
+            ['firstName','lastName','age','gender','religion','caste','education','occupation','bio']
+                .forEach(field => {
+                    if (profileForm.elements[field]) {
+                        profileForm.elements[field].value = profileData[field] || '';
+                    }
+                });
+        }
+
+        const prefForm = document.getElementById('preferences-form');
+        if (prefForm) {
+            const prefs = profileData.preferences || {};
+            ['minAge','maxAge','location','preferredReligion']
+                .forEach(field => {
+                    if (prefForm.elements[field]) {
+                        prefForm.elements[field].value = prefs[field] ||
+                            (field === 'preferredReligion' ? prefs.preferredReligions?.[0] || '' : '');
+                    }
+                });
+
+            if (prefForm.elements.interests) {
+                prefForm.elements.interests.value = Array.isArray(prefs.interests)
+                    ? prefs.interests.join(', ')
+                    : '';
+            }
+        }
+    },
+
+    async updateProfile(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const txt = btn.textContent;
+        try {
+            btn.disabled = true; btn.textContent = "Saving...";
+            const { token, user } = AuthManager.getAuth();
+            if (!token || !user?._id) throw new Error('Please login to update profile');
+
+            const formData = {
+                firstName: e.target.elements.firstName.value,
+                lastName: e.target.elements.lastName.value,
+                age: parseInt(e.target.elements.age.value),
+                gender: e.target.elements.gender.value,
+                religion: e.target.elements.religion.value,
+                caste: e.target.elements.caste.value,
+                education: e.target.elements.education.value,
+                occupation: e.target.elements.occupation.value,
+                bio: e.target.elements.bio.value
+            };
+
+            const response = await fetch(`${API_BASE}/user/update-profile`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json','Authorization': `Bearer ${token}` },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Failed to update profile');
+
+            AuthManager.setAuth(token, { ...user, ...data });
+            alert('Profile updated successfully!');
+            this.loadProfileData();
+
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            btn.disabled = false; btn.textContent = txt;
+        }
+    },
+
+    async updatePreferences(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const txt = btn.textContent;
+        try {
+            btn.disabled = true; btn.textContent = "Saving...";
+            const { token, user } = AuthManager.getAuth();
+            if (!token || !user?._id) throw new Error('Please login');
+
+            const prefs = {
+                minAge: parseInt(e.target.elements.minAge.value),
+                maxAge: parseInt(e.target.elements.maxAge.value),
+                interests: e.target.elements.interests.value.split(",").map(i=>i.trim()).filter(Boolean),
+                location: e.target.elements.location.value,
+                preferredReligions: [e.target.elements.preferredReligion.value]
+            };
+
+            const res = await fetch(`${API_BASE}/user/update-preferences`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json','Authorization': `Bearer ${token}` },
+                body: JSON.stringify(prefs)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to update preferences');
+            AuthManager.setAuth(token, { ...user, preferences: data });
+            alert('Preferences updated successfully!');
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            btn.disabled = false; btn.textContent = txt;
+        }
+    },
+
+    async uploadPhoto(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const txt = btn.textContent;
+        const fileInput = document.getElementById('profile-photo');
+        if (!fileInput.files[0]) return alert('Please select a file first');
+
+        try {
+            btn.disabled = true; btn.textContent = "Uploading...";
+            const { token, user } = AuthManager.getAuth();
+            if (!token || !user?._id) throw new Error('Please login');
+
+            const formData = new FormData();
+            formData.append('profilePhoto', fileInput.files[0]);
+
+            const res = await fetch(`${API_BASE}/user/upload-photo`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Upload failed');
+
+            const updatedUser = { ...user, profilePhoto: data.filePath };
+            AuthManager.setAuth(token, updatedUser);
+            document.getElementById('profile-pic').src = `${API_BASE.replace('/api','')}${data.filePath}`;
+            alert('Photo updated successfully!');
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            btn.disabled = false; btn.textContent = txt;
+            fileInput.value = '';
+        }
+    },
+
+    showLoadingState(show) {
+        const container = document.getElementById('profile-container');
+        if (container) container.style.opacity = show ? 0.5 : 1;
+    },
+    showErrorState(msg) {
+        const div = document.getElementById('profile-error');
+        if (div) { div.textContent = msg; div.style.display = msg ? 'block' : 'none'; }
+        else alert(msg);
+    }
+};
+
+// ================== MATCH MANAGER ==================
+const MatchManager = {
+    async fetchMatches() {
+        try {
+            const { token, user } = AuthManager.getAuth();
+            if (!token || !user?._id) throw new Error('Please login');
+            this.showLoading();
+
+            const res = await fetch(`${API_BASE}/match/find`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error((await res.json()).error || 'Failed to fetch matches');
+            const matches = await res.json();
+            this.displayMatches(matches);
+        } catch (err) {
+            this.showError(err.message);
+            AuthManager.handleApiError(err);
+        }
+    },
+    showLoading() {
+        const c = document.getElementById('matchesList');
+        if (c) c.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Finding your perfect matches...</p></div>`;
+    },
+    displayMatches(matches) {
+        const c = document.getElementById('matchesList');
+        if (!c) return;
+        if (matches.length === 0) { c.innerHTML = "<p>No matches found.</p>"; return; }
+        c.innerHTML = matches.map(u => `
+            <div class="match-card">
+                <div class="match-photo">
+                    <img src="${this.getProfilePhotoUrl(u.profilePhoto)}" alt="${u.firstName}" onerror="this.onerror=null;this.src='images/default-avatar.png'">
+                </div>
+                <h3>${u.firstName} ${u.lastName||""}</h3>
+                <p>Age: ${u.age}</p>
+                <p>Religion: ${u.religion||"Not specified"}</p>
+                <p>Location: ${u.location||"Not specified"}</p>
+                <p>Interests: ${u.interests?.join(", ") || "Not specified"}</p>
+                <a href="chat.html?user=${u._id}" class="chat-button">Chat</a>
+            </div>`).join('');
+    },
+    getProfilePhotoUrl(photo) {
+        if (!photo) return 'images/default-avatar.png';
+        if (photo.startsWith('http')) return photo;
+        return `${API_BASE.replace('/api','')}${photo}`;
+    },
+    showError(msg) {
+        const c = document.getElementById('matchesList');
+        if (!c) return;
+        c.innerHTML = `<div class="error-state"><h3>${msg}</h3><button onclick="MatchManager.fetchMatches()" class="btn">Try Again</button><a href="login.html">Login</a></div>`;
+    }
+};
+
+// ================== SIGNUP ==================
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const user = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        age: document.getElementById("age").value,
+        gender: document.getElementById("gender").value,
+        bio: document.getElementById("bio").value,
+        religion: document.getElementById("religion").value,
+        caste: document.getElementById("caste").value,
+        education: document.getElementById("education").value,
+        occupation: document.getElementById("occupation").value
+    };
+    const btn = e.target.querySelector('button[type="submit"]');
+    const txt = btn.textContent;
+    try {
+        btn.disabled = true; btn.textContent = "Registering...";
+        const res = await fetch(`${API_BASE}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...user,
+                preferences: { minAge: 18, maxAge: 50, preferredReligions: [user.religion] }
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Registration failed");
+        alert("Registration successful! Please login.");
+        window.location.href = "login.html";
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        btn.disabled = false; btn.textContent = txt;
+    }
+});
+
+// ================== LOGIN ==================
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('login.html')) {
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Login failed');
+            AuthManager.setAuth(data.token, { _id:data.user._id, firstName:data.user.firstName, email:data.user.email, profilePhoto:data.user.profilePhoto });
+            window.location.href = 'profile.html';
+        });
+    }
+
+    if (window.location.pathname.includes('profile.html')) {
+        if (!AuthManager.isAuthenticated()) window.location.href = 'login.html';
+        else {
+            document.getElementById('profile-form')?.addEventListener('submit', e => ProfileManager.updateProfile(e));
+            document.getElementById('preferences-form')?.addEventListener('submit', e => ProfileManager.updatePreferences(e));
+            document.getElementById('photo-upload-form')?.addEventListener('submit', e => ProfileManager.uploadPhoto(e));
+            ProfileManager.loadProfileData();
+        }
+    }
+
+    if (window.location.pathname.includes('match.html')) {
+        if (!AuthManager.isAuthenticated()) window.location.href = 'login.html';
+        else MatchManager.fetchMatches();
+    }
+});
+/*// ================== AUTH MANAGER ==================
 const AuthManager = {
     // Store authentication data
     setAuth(token, userData) {
@@ -570,8 +925,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-
+*/
+//this was correct
 
 
 
