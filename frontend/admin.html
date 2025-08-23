@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hearts Unite - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #e94057;
+            --secondary: #f27121;
+            --dark: #333;
+            --light: #f9f9f9;
+            --accent: #8a2387;
+            --error: #ff3333;
+            --success: #4CAF50;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo span {
+            color: #ffcccb;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-left: 2rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffcccb;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        /* Main Admin Content */
+        .admin-main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 2.5rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .admin-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Login Form */
+        .admin-login {
+            max-width: 500px;
+            margin: 0 auto 3rem;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .error-message {
+            color: var(--error);
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        /* Admin Dashboard - Hidden by default */
+        .admin-dashboard {
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1.5rem;
+            background-color: var(--dark);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #555;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* User Management */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .users-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .users-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .view-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin-bottom: 1rem;
+        }
+
+        .back-to-site {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back-to-site:hover {
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 60px;
+                left: -100%;
+                background: var(--primary);
+                width: 100%;
+                flex-direction: column;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+                padding: 2rem 0;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                margin: 1.5rem 0;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* User Profile Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: black;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .info-group {
+            margin-bottom: 1rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            color: #666;
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+            text-align: right;
+        }
+
+        .modal-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .success-message {
+            color: var(--success);
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Hearts<span>Unite</span></a>
+            
+            <div class="menu-toggle">☰</div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link">Back to Site</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Admin Main Content -->
+    <main class="admin-main">
+        <div class="container">
+            <div class="admin-header">
+                <h1 class="admin-title">Admin Dashboard</h1>
+                <p class="admin-subtitle">Manage your matrimonial website efficiently</p>
+            </div>
+
+            <!-- Admin Login Form -->
+            <div class="admin-login" id="adminLogin">
+                <h2 style="text-align: center; margin-bottom: 1.5rem;">Admin Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" class="form-input" placeholder="Enter admin username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-input" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="login-btn">Login</button>
+                    <p class="error-message" id="errorMessage">Invalid username or password. Please try again.</p>
+                    <p class="success-message" id="successMessage">Login successful! Redirecting to dashboard...</p>
+                </form>
+            </div>
+
+            <!-- Admin Dashboard - Will be shown after successful login -->
+            <div class="admin-dashboard" id="adminDashboard">
+                <div class="dashboard-header">
+                    <h2 class="welcome-text">Welcome, Admin!</h2>
+                    <button class="logout-btn" id="logoutBtn">Logout</button>
+                </div>
+
+                <!-- Dashboard Stats -->
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">100,000+</div>
+                        <div class="stat-label">Registered Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15,000+</div>
+                        <div class="stat-label">Successful Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2,500+</div>
+                        <div class="stat-label">New Users This Month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Premium Members</div>
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div class="user-management">
+                    <h3 class="section-title">User Management</h3>
+                    <div class="table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Age</th>
+                                    <th>Location</th>
+                                    <th>Join Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>001</td>
+                                    <td>Rahul Sharma</td>
+                                    <td>rahul.s@example.com</td>
+                                    <td>28</td>
+                                    <td>Mumbai</td>
+                                    <td>15 Mar 2025</td>
+                                    <td>Active</td>
+                                    <td>
+                                        <button class="action-btn view-btn" onclick="viewUser(1)">View</button>
+                                        <button class="action-btn edit-btn">Edit</button>
+                                        <button class="action-btn delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>002</td>
+                                    <td>Priya Patel</td>
+                                    <td>priya.p@example.com</td>
+                                    <td>26</td>
+                                    <td>Delhi</td>
+                                    <td>20 Mar 2025</td>
+                                    <td>Active</td>
+                                    <td>
+                                        <button class="action-btn view-btn" onclick="viewUser(2)">View</button>
+                                        <button class="action-btn edit-btn">Edit</button>
+                                        <button class="action-btn delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>003</td>
+                                    <td>Vikram Malhotra</td>
+                                    <td>vikram.m@example.com</td>
+                                    <td>30</td>
+                                    <td>Bangalore</td>
+                                    <td>22 Mar 2025</td>
+                                    <td>Premium</td>
+                                    <td>
+                                        <button class="action-btn view-btn" onclick="viewUser(3)">View</button>
+                                        <button class="action-btn edit-btn">Edit</button>
+                                        <button class="action-btn delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>004</td>
+                                    <td>Nisha Reddy</td>
+                                    <td>nisha.r@example.com</td>
+                                    <td>27</td>
+                                    <td>Hyderabad</td>
+                                    <td>25 Mar 2025</td>
+                                    <td>Active</td>
+                                    <td>
+                                        <button class="action-btn view-btn" onclick="viewUser(4)">View</button>
+                                        <button class="action-btn edit-btn">Edit</button>
+                                        <button class="action-btn delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>005</td>
+                                    <td>Arjun Singh</td>
+                                    <td>arjun.s@example.com</td>
+                                    <td>29</td>
+                                    <td>Chennai</td>
+                                    <td>28 Mar 2025</td>
+                                    <td>Premium</td>
+                                    <td>
+                                        <button class="action-btn view-btn" onclick="viewUser(5)">View</button>
+                                        <button class="action-btn edit-btn">Edit</button>
+                                        <button class="action-btn delete-btn">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Profile Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">User Profile</h2>
+            </div>
+            <div class="user-info">
+                <div class="info-group">
+                    <div class="info-label">Name:</div>
+                    <div class="info-value" id="modalName">Rahul Sharma</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Email:</div>
+                    <div class="info-value" id="modalEmail">rahul.s@example.com</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Phone:</div>
+                    <div class="info-value" id="modalPhone">+91 9876543210</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Age:</div>
+                    <div class="info-value" id="modalAge">28</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Gender:</div>
+                    <div class="info-value" id="modalGender">Male</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Location:</div>
+                    <div class="info-value" id="modalLocation">Mumbai, India</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Occupation:</div>
+                    <div class="info-value" id="modalOccupation">Software Engineer</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Education:</div>
+                    <div class="info-value" id="modalEducation">B.Tech in Computer Science</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Religion:</div>
+                    <div class="info-value" id="modalReligion">Hindu</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Marital Status:</div>
+                    <div class="info-value" id="modalMaritalStatus">Never Married</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Join Date:</div>
+                    <div class="info-value" id="modalJoinDate">15 Mar 2025</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Account Status:</div>
+                    <div class="info-value" id="modalStatus">Active</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn edit-btn">Edit Profile</button>
+                <button class="modal-btn delete-btn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">&copy; 2025 HeartsUnite Matrimonial Services. All rights reserved.</p>
+            <a href="index.html" class="back-to-site">Back to Main Site</a>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Sample admin credentials - In real application, this should be handled server-side
+        const adminCredentials = {
+            username: "admin",
+            password: "admin123"
+        };
+
+        // Admin Login Functionality
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const adminLogin = document.getElementById('adminLogin');
+        const adminDashboard = document.getElementById('adminDashboard');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === adminCredentials.username && password === adminCredentials.password) {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'block';
+                
+                // Simulate loading with a timeout
+                setTimeout(() => {
+                    adminLogin.style.display = 'none';
+                    adminDashboard.style.display = 'block';
+                }, 1500);
+            } else {
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        });
+
+        // Logout Functionality
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        logoutBtn.addEventListener('click', function() {
+            adminDashboard.style.display = 'none';
+            adminLogin.style.display = 'block';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        });
+
+        // User Profile Modal
+        const userModal = document.getElementById('userModal');
+        
+        function viewUser(userId) {
+            // In a real application, you would fetch user data based on userId
+            // For demo purposes, we're just showing the modal
+            userModal.style.display = 'block';
+            
+            // Sample data - would be populated from database in real application
+            const userData = {
+                1: {
+                    name: "Rahul Sharma",
+                    email: "rahul.s@example.com",
+                    phone: "+91 9876543210",
+                    age: "28",
+                    gender: "Male",
+                    location: "Mumbai, India",
+                    occupation: "Software Engineer",
+                    education: "B.Tech in Computer Science",
+                    religion: "Hindu",
+                    maritalStatus: "Never Married",
+                    joinDate: "15 Mar 2025",
+                    status: "Active"
+                },
+                2: {
+                    name: "Priya Patel",
+                    email: "priya.p@example.com",
+                    phone: "+91 9876543211",
+                    age: "26",
+                    gender: "Female",
+                    location: "Delhi, India",
+                    occupation: "Marketing Manager",
+                    education: "MBA in Marketing",
+                    religion: "Hindu",
+                    maritalStatus: "Never Married",
+                    joinDate: "20 Mar 2025",
+                    status: "Active"
+                },
+                3: {
+                    name: "Vikram Malhotra",
+                    email: "vikram.m@example.com",
+                    phone: "+91 9876543212",
+                    age: "30",
+                    gender: "Male",
+                    location: "Bangalore, India",
+                    occupation: "Business Analyst",
+                    education: "MBA in Finance",
+                    religion: "Sikh",
+                    maritalStatus: "Never Married",
+                    joinDate: "22 Mar 2025",
+                    status: "Premium"
+                },
+                4: {
+                    name: "Nisha Reddy",
+                    email: "nisha.r@example.com",
+                    phone: "+91 9876543213",
+                    age: "27",
+                    gender: "Female",
+                    location: "Hyderabad, India",
+                    occupation: "Doctor",
+                    education: "MBBS, MD",
+                    religion: "Hindu",
+                    maritalStatus: "Never Married",
+                    joinDate: "25 Mar 2025",
+                    status: "Active"
+                },
+                5: {
+                    name: "Arjun Singh",
+                    email: "arjun.s@example.com",
+                    phone: "+91 9876543214",
+                    age: "29",
+                    gender: "Male",
+                    location: "Chennai, India",
+                    occupation: "Architect",
+                    education: "B.Arch",
+                    religion: "Sikh",
+                    maritalStatus: "Never Married",
+                    joinDate: "28 Mar 2025",
+                    status: "Premium"
+                }
+            };
+            
+            // Populate modal with user data
+            const user = userData[userId];
+            document.getElementById('modalName').textContent = user.name;
+            document.getElementById('modalEmail').textContent = user.email;
+            document.getElementById('modalPhone').textContent = user.phone;
+            document.getElementById('modalAge').textContent = user.age;
+            document.getElementById('modalGender').textContent = user.gender;
+            document.getElementById('modalLocation').textContent = user.location;
+            document.getElementById('modalOccupation').textContent = user.occupation;
+            document.getElementById('modalEducation').textContent = user.education;
+            document.getElementById('modalReligion').textContent = user.religion;
+            document.getElementById('modalMaritalStatus').textContent = user.maritalStatus;
+            document.getElementById('modalJoinDate').textContent = user.joinDate;
+            document.getElementById('modalStatus').textContent = user.status;
+        }
+        
+        function closeModal() {
+            userModal.style.display = 'none';
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target == userModal) {
+                userModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

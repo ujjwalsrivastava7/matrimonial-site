@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Profile - HeartsUnite</title>
+  <style>
+    :root {
+      --primary: #e94057;
+      --secondary: #f27121;
+      --bg-light: #fff;
+      --bg-dark: #f9f9f9;
+      --border-color: #ddd;
+      --text-dark: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: var(--text-dark);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h2, h3 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--bg-light);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    #profile-pic {
+      display: block;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--primary);
+      margin: 0 auto 20px;
+    }
+
+    form label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #d1334a;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .form-row > div {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .section-header {
+      text-align: center;
+    }
+
+    .button-group {
+      text-align: right;
+    }
+
+    @media (max-width: 600px) {
+      .form-row {
+        flex-direction: column;
+      }
+
+      .button-group {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <h2 class="section-header">My Profile</h2>
+
+    <div class="card" id="photo-section">
+      <img id="profile-pic" src="default.png" alt="Profile Photo">
+      <form id="photo-upload-form">
+        <label for="profile-photo">Update Profile Picture:</label>
+        <input type="file" id="profile-photo" accept="image/*">
+        <button type="submit">Upload Photo</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <form id="profile-form">
+        <div class="form-row">
+          <div>
+            <label for="firstName">First Name *</label>
+            <input type="text" id="firstName" name="firstName" required>
+          </div>
+          <div>
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" name="lastName" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="age">Age *</label>
+            <input type="number" id="age" name="age" min="18" max="100" required>
+          </div>
+          <div>
+            <label for="gender">Gender *</label>
+            <select id="gender" name="gender" required>
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="religion">Religion *</label>
+            <select id="religion" name="religion" required>
+              <option value="">Select Religion</option>
+              <option value="hindu">Hindu</option>
+              <option value="muslim">Muslim</option>
+              <option value="christian">Christian</option>
+              <option value="sikh">Sikh</option>
+              <option value="jain">Jain</option>
+              <option value="buddhist">Buddhist</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="caste">Caste/Community</label>
+            <input type="text" id="caste" name="caste">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="education">Education *</label>
+            <select id="education" name="education" required>
+              <option value="">Select Education</option>
+              <option value="high_school">High School</option>
+              <option value="bachelor">Bachelor's Degree</option>
+              <option value="master">Master's Degree</option>
+              <option value="phd">PhD/Doctorate</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="occupation">Occupation *</label>
+            <input type="text" id="occupation" name="occupation" required>
+          </div>
+        </div>
+
+        <label for="bio">About Yourself</label>
+        <textarea id="bio" name="bio" placeholder="Tell us about yourself, your interests, and what you're looking for in a partner"></textarea>
+
+        <div class="button-group">
+          <button type="submit">Save Profile</button>
+          <button type="button" onclick="window.location.href='match.html'">Find Matches</button>
+        </div>
+      </form>
+    </div>
+
+    <h3 class="section-header">Update Preferences</h3>
+    <div class="card">
+      <form id="preferences-form">
+        <div class="form-row">
+          <div>
+            <label for="minAge">Preferred Minimum Age *</label>
+            <input type="number" id="minAge" name="minAge" min="18" max="100" required>
+          </div>
+          <div>
+            <label for="maxAge">Preferred Maximum Age *</label>
+            <input type="number" id="maxAge" name="maxAge" min="18" max="100" required>
+          </div>
+        </div>
+
+        <label for="interests">Interests (comma-separated)</label>
+        <input type="text" id="interests" name="interests" placeholder="e.g., Reading, Music, Traveling">
+
+        <label for="location">Location *</label>
+        <input type="text" id="location" name="location" required>
+
+        <label for="preferredReligion">Preferred Religion *</label>
+        <select id="preferredReligion" name="preferredReligion" required>
+          <option value="">Select Preferred Religion</option>
+          <option value="hindu">Hindu</option>
+          <option value="muslim">Muslim</option>
+          <option value="christian">Christian</option>
+          <option value="sikh">Sikh</option>
+          <option value="jain">Jain</option>
+          <option value="buddhist">Buddhist</option>
+          <option value="any">Any</option>
+        </select>
+
+        <div class="button-group">
+          <button type="submit">Update Preferences</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

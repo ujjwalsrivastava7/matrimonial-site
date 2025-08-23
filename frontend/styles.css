@@ -1,0 +1,176 @@
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+input, textarea {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4000ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #3000cc;
+}
+
+/* Match Container */
+.match-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Match Card - Consolidated Styles */
+.match-card {
+    width: 300px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+    background: #fff;
+    padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.match-photo {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+    background: #f5f5f5;
+}
+
+.match-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.match-photo:hover img {
+    transform: scale(1.05);
+}
+
+.match-details h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+    color: #333;
+}
+
+.match-details p {
+    font-size: 14px;
+    margin: 5px 0;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Button Styles */
+.chat-button, .back-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-top: 10px;
+    background-color: #e94057;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.chat-button:hover, .back-btn:hover {
+    background-color: #d2314a;
+}
+
+.back-btn {
+    background-color: #28a745;
+    margin: 20px auto;
+    padding: 10px 20px;
+}
+
+.back-btn:hover {
+    background-color: #218838;
+}
+
+/* State Styles */
+.loading-state, .empty-state, .error-state {
+    text-align: center;
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 500px;
+}
+
+.loading-state .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #e94057;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .match-container {
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .match-card {
+        width: calc(50% - 15px);
+    }
+    
+    .match-photo {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .match-card {
+        width: 100%;
+    }
+    
+    .match-photo {
+        height: 150px;
+    }
+    
+    input, textarea {
+        width: 90%;
+    }
+}
