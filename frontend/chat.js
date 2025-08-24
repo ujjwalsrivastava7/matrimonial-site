@@ -1,3 +1,16 @@
+// ================== CONFIGURATION ==================
+const Config = {
+    // Automatically determine API base URL based on current host
+    getApiBaseUrl() {
+        // Use production backend URL if on Vercel deployment
+        if (window.location.hostname.includes('vercel.app') || 
+            window.location.hostname.includes('localhost') === false) {
+            return 'https://matrimonial-site-7gx6.onrender.com';
+        }
+        // Use localhost for development
+        return 'http://localhost:5000';
+    }
+};
 
 console.log("Token in localStorage:", localStorage.getItem("token"));
 console.log("User ID in localStorage:", localStorage.getItem("userId"));
@@ -13,11 +26,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!token) {
         alert("Invalid access. Please log in.");
         window.location.href = "login.html";
+        return;
     }
-    const socket = io("http://localhost:5000"); // Ensure this URL matches your backend
- // Fetch older messages
+    
+    // Connect to Socket.IO with the correct URL
+    const socket = io(Config.getApiBaseUrl());
+
+    // Fetch older messages
     try {
-        const response = await fetch(`http://localhost:5000/api/chat/history/${receiverId}`, {
+        const response = await fetch(`${Config.getApiBaseUrl()}/api/chat/history/${receiverId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -39,22 +56,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Error loading chat history.");
     }
 
-
-
-
-
     socket.emit("joinRoom", {
         senderId: localStorage.getItem("userId"),
         receiverId
     });
 
-
-
     const messagesContainer = document.getElementById("messages");
     console.log("Messages container:", messagesContainer); // Debugging
-
-
-
 
     document.getElementById("send-button").addEventListener("click", async () => {
         const messageInput = document.getElementById("message-input");
@@ -73,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (message === "") return;
 
         try {
-            const response = await fetch("http://localhost:5000/api/chat/send", {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/chat/send`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -111,41 +119,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-
     socket.on("receiveMessage", ({ senderId, message }) => {
-        
         displayMessage("User", message);
     });
    
     function displayMessage(sender, message) {
-
         const messagesContainer = document.getElementById("messages");
-
 
         if (!messagesContainer) {
             console.error("Messages container not found!");
             return;
         }
 
-
-        // const messagesContainer = document.getElementById("messages");
         const msgDiv = document.createElement("div");
         msgDiv.classList.add("message");
         msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
         messagesContainer.appendChild(msgDiv);
+        
+        // Scroll to bottom to show latest message
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 });
-
-
-
-
-
-
-
-
-
-
-
 
 // ================== AUTH MANAGER ==================
 const AuthManager = {
@@ -197,7 +191,7 @@ const MatchManager = {
             // Show loading state
             this.showLoading();
 
-            const response = await fetch(`http://localhost:5000/api/matches`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/matches`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -245,10 +239,19 @@ const MatchManager = {
             return;
         }
 
-        container.innerHTML = matches.map(match => `
+        container.innerHTML = matches.map(match => {
+            // Handle profile photo URL correctly
+            let profilePhotoUrl = 'images/default-avatar.png';
+            if (match.profilePhoto) {
+                profilePhotoUrl = match.profilePhoto.startsWith('http') 
+                    ? match.profilePhoto 
+                    : `${Config.getApiBaseUrl()}${match.profilePhoto}`;
+            }
+            
+            return `
             <div class="match-card">
                 <div class="match-photo">
-                    <img src="${match.profilePhoto || 'images/default-avatar.png'}" 
+                    <img src="${profilePhotoUrl}" 
                          alt="${match.firstName}" 
                          onerror="this.src='images/default-avatar.png'">
                 </div>
@@ -267,7 +270,7 @@ const MatchManager = {
                     </button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
 
         // Add event listeners to all chat buttons
         container.querySelectorAll('.chat-btn').forEach(button => {
@@ -314,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('http://localhost:5000/api/auth/login', {
+                const response = await fetch(`${Config.getApiBaseUrl()}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })

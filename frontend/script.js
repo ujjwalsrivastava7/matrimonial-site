@@ -1,3 +1,17 @@
+// ================== CONFIGURATION ==================
+const Config = {
+    // Automatically determine API base URL based on current host
+    getApiBaseUrl() {
+        // Use production backend URL if on Vercel deployment
+        if (window.location.hostname.includes('vercel.app') || 
+            window.location.hostname.includes('localhost') === false) {
+            return 'https://matrimonial-site-7gx6.onrender.com';
+        }
+        // Use localhost for development
+        return 'http://localhost:5000';
+    }
+};
+
 // ================== AUTH MANAGER ==================
 const AuthManager = {
     // Store authentication data
@@ -52,7 +66,7 @@ const ProfileManager = {
             // Show loading state
             this.showLoadingState(true);
 
-            const response = await fetch(`http://localhost:5000/api/user/profile`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/user/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -80,7 +94,7 @@ const ProfileManager = {
         if (profileData.profilePhoto) {
             profilePic.src = profileData.profilePhoto.startsWith('http') 
                 ? profileData.profilePhoto 
-                : `http://localhost:5000${profileData.profilePhoto}`;
+                : `${Config.getApiBaseUrl()}${profileData.profilePhoto}`;
             profilePic.onerror = () => {
                 profilePic.src = 'default.png';
             };
@@ -155,7 +169,7 @@ const ProfileManager = {
                 bio: e.target.elements.bio.value
             };
 
-            const response = await fetch(`http://localhost:5000/api/user/update-profile`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/user/update-profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,7 +220,7 @@ const ProfileManager = {
                 preferredReligions: [e.target.elements.preferredReligion.value]
             };
 
-            const response = await fetch(`http://localhost:5000/api/user/update-preferences`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/user/update-preferences`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -256,7 +270,7 @@ const ProfileManager = {
             const formData = new FormData();
             formData.append('profilePhoto', fileInput.files[0]);
 
-            const response = await fetch(`http://localhost:5000/api/user/upload-photo`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/user/upload-photo`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -270,7 +284,7 @@ const ProfileManager = {
             AuthManager.setAuth(token, updatedUser);
             
             document.getElementById('profile-pic').src = 
-                `http://localhost:5000${data.filePath}`;
+                `${Config.getApiBaseUrl()}${data.filePath}`;
             alert('Photo updated successfully!');
 
         } catch (error) {
@@ -314,7 +328,7 @@ const MatchManager = {
 
             this.showLoading();
 
-            const response = await fetch(`http://localhost:5000/api/match/find`, {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/match/find`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -382,11 +396,11 @@ const MatchManager = {
         
         // Handle server paths
         if (photo.startsWith('/uploads/')) {
-            return `http://localhost:5000${photo}`;
+            return `${Config.getApiBaseUrl()}${photo}`;
         }
         
         // Default case
-        return `http://localhost:5000/uploads/${photo}`;
+        return `${Config.getApiBaseUrl()}/uploads/${photo}`;
     },
 
     showError(message) {
@@ -431,7 +445,7 @@ document.getElementById("signupForm")?.addEventListener("submit", async (event) 
         submitBtn.textContent = "Registering...";
 
         // Send request to backend
-        const response = await fetch("http://localhost:5000/api/auth/register", {
+        const response = await fetch(`${Config.getApiBaseUrl()}/api/auth/register`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json" 
@@ -506,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const response = await fetch('http://localhost:5000/api/auth/login', {
+            const response = await fetch(`${Config.getApiBaseUrl()}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -543,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const res = await fetch('http://localhost:5000/api/auth/register', {
+                const res = await fetch(`${Config.getApiBaseUrl()}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -570,11 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-
-
-
-
 
 
 

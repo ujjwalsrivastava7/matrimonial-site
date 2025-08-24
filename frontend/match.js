@@ -1,3 +1,17 @@
+// ================== CONFIGURATION ==================
+const Config = {
+    // Automatically determine API base URL based on current host
+    getApiBaseUrl() {
+        // Use production backend URL if on Vercel deployment
+        if (window.location.hostname.includes('vercel.app') || 
+            window.location.hostname.includes('localhost') === false) {
+            return 'https://matrimonial-site-7gx6.onrender.com';
+        }
+        // Use localhost for development
+        return 'http://localhost:5000';
+    }
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   const matchesList = document.getElementById("matchesList");
   const token = localStorage.getItem("token");
@@ -9,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5000/api/match/find', {
+    const response = await fetch(`${Config.getApiBaseUrl()}/api/match/find`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
 
@@ -28,8 +42,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const card = document.createElement("div");
       card.className = "match-card";
 
+      // Handle profile photo URL correctly
+      let profilePhotoUrl = 'default.png';
+      if (user.profilePhoto) {
+        profilePhotoUrl = user.profilePhoto.startsWith('http') 
+          ? user.profilePhoto 
+          : `${Config.getApiBaseUrl()}${user.profilePhoto}`;
+      }
+
       card.innerHTML = `
-        <img src="${user.profilePhoto || 'default.png'}" alt="${user.firstName}'s photo" class="match-photo" />
+        <img src="${profilePhotoUrl}" alt="${user.firstName}'s photo" class="match-photo" 
+             onerror="this.src='default.png'" />
         <h3>${user.firstName} ${user.lastName || ""}</h3>
         <p>Age: ${user.age}</p>
         <p>Religion: ${user.religion || "Not specified"}</p>
