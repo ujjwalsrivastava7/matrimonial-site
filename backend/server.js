@@ -21,16 +21,30 @@ const app = express();
 const server = http.createServer(app);
 
 // ====== Middleware ======
+// Dynamic CORS configuration for Vercel deployments
 const allowedOrigins = [
-  "https://matrimonial-site-q8v9yn2cy-ujjwalsrivastava7s-projects.vercel.app", // Vercel frontend
-  "http://localhost:3000" // Local testing
+  "http://localhost:3000", // Local development
+  "https://matrimonial-site-q8v9yn2cy-ujjwalsrivastava7s-projects.vercel.app", // Your current Vercel domain
+  /\.vercel\.app$/, // Allow all Vercel deployments
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list or matches the pattern
+    if (allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return origin === allowedOrigin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    })) {
       callback(null, true);
     } else {
+      console.log('CORS blocked for origin:', origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -56,11 +70,33 @@ app.use("/api/user", profileRoutes);
 app.use("/api/match", matchRoutes);
 app.use("/api/chat", chatRoutes);
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Server is running" });
+});
+
 // ====== Socket.IO Setup ======
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: function(origin, callback) {
+      // Same CORS logic as above
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.some(allowedOrigin => {
+        if (typeof allowedOrigin === 'string') {
+          return origin === allowedOrigin;
+        } else if (allowedOrigin instanceof RegExp) {
+          return allowedOrigin.test(origin);
+        }
+        return false;
+      })) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
